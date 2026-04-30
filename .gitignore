@@ -30,6 +30,10 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+build/
+
+# Local sleep acceptance test outputs
+sleep-test-logs/
 
 # CocoaPods
 #
