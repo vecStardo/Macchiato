@@ -1,24 +1,60 @@
-# Macchiato
+<p align="center">
+  <img src="Macchiato/Assets.xcassets/MacchiatoBase.imageset/macchiato-base.png" width="64" height="64" alt="Macchiato logo" />
+</p>
 
-Macchiato is a minimal macOS menu bar utility with one switch: keep the Mac awake, including lid-closed use.
+<h1 align="center">Macchiato</h1>
 
-It uses an IOKit `PreventUserIdleSystemSleep` assertion plus macOS' `pmset disablesleep` setting. The app now ships a privileged LaunchDaemon helper, installed through `SMAppService`, so the system-level `pmset` work is approved once instead of prompting on every toggle.
+<p align="center">
+  A tiny macOS menu bar utility that keeps your Mac awake with one button.
+</p>
 
-## Helper approval
+## What It Solves
 
-The first time Macchiato needs lid-closed sleep control, macOS may require the user to approve **Macchiato Helper** in System Settings. After approval, normal on/off toggles communicate with the helper over XPC and should not ask for administrator credentials again.
+Mac-chiato is built for people who leave long-running work on their Mac: coding agents, local automation, builds, data jobs, model runs, downloads, and anything else that should keep going while you step away.
 
-Internal distribution uses the project's private signing flow. Release builds must not include debug signing entitlements such as `get-task-allow`, and the app and embedded helper must be signed consistently before packaging the DMG. Users approve/trust the internal build through macOS, then Macchiato registers the helper through `SMAppService`.
+![screenshot](docs/screenshot.png)
 
-## Recovery
+When you need to close your computer, you should be able to close it normally. No leaving the lid slightly open, no changing system settings by hand, and no wondering whether the agent that was halfway through a task got interrupted.
 
-If Macchiato is force-quit or crashes while enabled, restore normal sleep behavior manually:
+Macchiato gives you a single menu bar switch:
+
+- **On:** keep the Mac awake, including lid-closed use.
+- **Off:** restore normal macOS sleep behavior.
+
+## How To Use
+
+1. Launch **Macchiato**.
+2. Click the menu bar icon.
+3. Turn on **Keep Awake** before starting or leaving a long-running task.
+4. Close the lid whenever you need to move, pause, or put the Mac aside.
+5. Turn **Keep Awake** off when you want macOS to sleep normally again.
+
+The first time Macchiato enables lid-closed sleep control, macOS may ask you to approve **Macchiato Helper** in System Settings. After that approval, the regular on/off switch should work without asking for administrator credentials every time.
+
+## Good For
+
+- Agents that continue working while you are away from the keyboard.
+- Local development servers, builds, test runs, and scripts.
+- Long downloads, syncs, exports, or processing jobs.
+- Any moment where you want to close the MacBook without babysitting the lid.
+
+For long sessions, keep an eye on battery and heat, especially if the Mac is closed and not plugged in.
+
+## If Something Goes Wrong
+
+If Macchiato is force-quit or crashes while enabled, you can manually restore normal sleep behavior:
 
 ```sh
 sudo pmset -a disablesleep 0
 ```
 
-## Build
+## Development
+
+Macchiato uses an IOKit `PreventUserIdleSystemSleep` assertion plus macOS' `pmset disablesleep` setting. The app ships a privileged LaunchDaemon helper, installed through `SMAppService`, so the system-level `pmset` work is approved once instead of prompting on every toggle.
+
+Internal distribution uses the project's private signing flow. Release builds must not include debug signing entitlements such as `get-task-allow`, and the app and embedded helper must be signed consistently before packaging the DMG. Users approve/trust the internal build through macOS, then Macchiato registers the helper through `SMAppService`.
+
+Build locally:
 
 ```sh
 xcodebuild -project Macchiato.xcodeproj -scheme Macchiato -configuration Debug build
@@ -39,9 +75,9 @@ Macchiato.app/Contents/MacOS/app.macchiato.Macchiato.PowerHelper
 Macchiato.app/Contents/Library/LaunchDaemons/app.macchiato.Macchiato.PowerHelper.plist
 ```
 
-## Verify the assertion
+## Verify The Assertion
 
-Launch the app, turn on **Keep Mac Awake**, then run:
+Launch the app, turn on **Keep Awake**, then run:
 
 ```sh
 pmset -g assertions | grep Macchiato
@@ -68,7 +104,7 @@ scripts/analyze-sleep-log.sh sleep-test-logs/*.csv
 Suggested flow:
 
 1. Ensure Macchiato is off, start `scripts/sleep-log-runner.sh --scenario lid-closed-off`, close the lid or otherwise trigger the sleep condition, wait 10 minutes, reopen the Mac, then stop the logger with Ctrl+C.
-2. Turn on **Keep Mac Awake**, start `scripts/sleep-log-runner.sh --scenario keep-awake-on`, repeat the 10 minute window, reopen the Mac, then stop the logger.
+2. Turn on **Keep Awake**, start `scripts/sleep-log-runner.sh --scenario keep-awake-on`, repeat the 10 minute window, reopen the Mac, then stop the logger.
 3. Run `scripts/analyze-sleep-log.sh sleep-test-logs/*.csv`.
 
 The analyzer reports sample count, wall time, maximum timestamp gap, whether the Macchiato power assertion was observed, and how many samples saw `SleepDisabled=1`. A large gap means the logger stopped running during the test window, which usually indicates sleep.
