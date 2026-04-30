@@ -1,12 +1,16 @@
 # Macchiato
 
-Macchiato is a minimal macOS menu bar utility with one switch: keep the Mac awake, including during local lid-closed validation.
+Macchiato is a minimal macOS menu bar utility with one switch: keep the Mac awake, including lid-closed use.
 
-It uses an IOKit `PreventUserIdleSystemSleep` assertion plus macOS' `pmset disablesleep` setting. Enabling or disabling the switch shows a macOS administrator prompt because changing `pmset disablesleep` is a system-level power setting.
+It uses an IOKit `PreventUserIdleSystemSleep` assertion plus macOS' `pmset disablesleep` setting. The app now ships a privileged LaunchDaemon helper, installed through `SMAppService`, so the system-level `pmset` work is approved once instead of prompting on every toggle.
 
-## Important limitation
+## Helper approval
 
-This build uses an administrator-authorized command instead of a privileged helper. It is suitable for local validation, but the production implementation should move privileged work into a signed helper and add stronger recovery behavior.
+The first time Macchiato needs lid-closed sleep control, macOS may require the user to approve **Macchiato Helper** in System Settings. After approval, normal on/off toggles communicate with the helper over XPC and should not ask for administrator credentials again.
+
+Apps that register LaunchDaemons with `SMAppService` must be code signed, and production distribution must be notarized. For release builds, set a real Apple Developer Team and notarize the containing app bundle. The XPC connection validates bundle identifiers and, when available, the signing Team ID.
+
+## Recovery
 
 If Macchiato is force-quit or crashes while enabled, restore normal sleep behavior manually:
 
@@ -18,6 +22,13 @@ sudo pmset -a disablesleep 0
 
 ```sh
 xcodebuild -project Macchiato.xcodeproj -scheme Macchiato -configuration Debug build
+```
+
+The `Macchiato` target depends on `Macchiato Power Helper` and embeds the helper executable plus its launchd plist into:
+
+```text
+Macchiato.app/Contents/MacOS/app.macchiato.Macchiato.PowerHelper
+Macchiato.app/Contents/Library/LaunchDaemons/app.macchiato.Macchiato.PowerHelper.plist
 ```
 
 ## Verify the assertion

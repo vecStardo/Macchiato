@@ -11,6 +11,6 @@ struct MacchiatoApp: App {
         } label: {
             Image(systemName: power.isActive ? "cup.and.saucer.fill" : "cup.and.saucer")
         }
-        .menuBarExtraStyle(.menu)
+        .menuBarExtraStyle(.window)
     }
 }
