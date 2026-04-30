@@ -41,6 +41,8 @@ struct MenuView: View {
 
     private var awakeToggle: some View {
         Button {
+            guard !power.isChanging else { return }
+
             Task {
                 await power.setActive(!power.isActive)
             }
@@ -85,37 +87,42 @@ struct MenuView: View {
                     .strokeBorder(Color.white.opacity(power.isActive ? 0.38 : 0.5), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.14), radius: 16, y: 8)
+            .animation(.easeInOut(duration: 0.22), value: power.isActive)
         }
         .buttonStyle(.plain)
-        .disabled(power.isChanging)
     }
 
-    @ViewBuilder
     private var statusArea: some View {
-        if power.isChanging || power.lastError != nil {
-            HStack(spacing: 8) {
-                Image(systemName: power.lastError == nil ? "clock.arrow.circlepath" : "exclamationmark.triangle.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(statusColor)
+        HStack(spacing: 8) {
+            Image(systemName: power.lastError == nil ? "clock.arrow.circlepath" : "exclamationmark.triangle.fill")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(statusColor)
 
-                Text(power.lastError ?? "Applying system sleep setting...")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(statusColor)
-                    .lineLimit(3)
-                    .fixedSize(horizontal: false, vertical: true)
+            Text(power.lastError ?? "Applying system sleep setting...")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(statusColor)
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
 
-                Spacer(minLength: 0)
+            Spacer(minLength: 0)
 
-                if needsHelperApproval {
-                    Button("Open Settings") {
-                        power.openHelperApprovalSettings()
-                    }
-                    .font(.system(size: 11, weight: .semibold))
-                    .buttonStyle(.borderless)
+            if needsHelperApproval {
+                Button("Open Settings") {
+                    power.openHelperApprovalSettings()
                 }
+                .font(.system(size: 11, weight: .semibold))
+                .buttonStyle(.borderless)
             }
-            .padding(.horizontal, 2)
         }
+        .padding(.horizontal, 2)
+        .frame(minHeight: 18)
+        .opacity(showsStatus ? 1 : 0)
+        .allowsHitTesting(showsStatus)
+        .accessibilityHidden(!showsStatus)
+    }
+
+    private var showsStatus: Bool {
+        power.isChanging || power.lastError != nil
     }
 
     private var needsHelperApproval: Bool {
