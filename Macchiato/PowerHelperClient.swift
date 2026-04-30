@@ -13,9 +13,22 @@ final class PowerHelperClient {
     private init() {}
 
     func setSleepDisabled(_ disabled: Bool) async throws {
-        try registerHelperIfNeeded()
-        let connection = makeConnectionIfNeeded()
+        try await performWithHelperConnection { connection in
+            try await sendSleepDisabled(disabled, connection: connection)
+        }
+    }
 
+    func isSleepDisabled() async throws -> Bool {
+        try await performWithHelperConnection { connection in
+            try await requestSleepDisabled(connection: connection)
+        }
+    }
+
+    func openHelperApprovalSettings() {
+        SMAppService.openSystemSettingsLoginItems()
+    }
+
+    private func sendSleepDisabled(_ disabled: Bool, connection: NSXPCConnection) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             let once = ContinuationGate(continuation)
             let timeout = scheduleTimeout(for: once, connection: connection)
@@ -43,10 +56,7 @@ final class PowerHelperClient {
         }
     }
 
-    func isSleepDisabled() async throws -> Bool {
-        try registerHelperIfNeeded()
-        let connection = makeConnectionIfNeeded()
-
+    private func requestSleepDisabled(connection: NSXPCConnection) async throws -> Bool {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
             let once = ContinuationGate(continuation)
             let timeout = scheduleTimeout(for: once, connection: connection)
@@ -74,8 +84,49 @@ final class PowerHelperClient {
         }
     }
 
-    func openHelperApprovalSettings() {
-        SMAppService.openSystemSettingsLoginItems()
+    private func performWithHelperConnection<Value>(
+        _ operation: (NSXPCConnection) async throws -> Value
+    ) async throws -> Value {
+        try registerHelperIfNeeded()
+
+        do {
+            return try await operation(makeConnectionIfNeeded())
+        } catch {
+            guard shouldRefreshRegistration(after: error) else {
+                throw error
+            }
+
+            try refreshHelperRegistration(after: error)
+            return try await operation(makeConnectionIfNeeded())
+        }
+    }
+
+    private func shouldRefreshRegistration(after error: Error) -> Bool {
+        guard let helperError = error as? PowerHelperClientError else {
+            return false
+        }
+
+        switch helperError {
+        case .timedOut, .unavailable:
+            return true
+        case .commandFailed, .notFound, .requiresApproval:
+            return false
+        }
+    }
+
+    private func refreshHelperRegistration(after originalError: Error) throws {
+        resetCurrentConnection()
+
+        do {
+            if service.status == .enabled || service.status == .requiresApproval {
+                try service.unregister()
+            }
+            try registerHelperIfNeeded()
+        } catch let helperError as PowerHelperClientError {
+            throw helperError
+        } catch {
+            throw originalError
+        }
     }
 
     private func registerHelperIfNeeded() throws {
@@ -155,6 +206,15 @@ final class PowerHelperClient {
     private func resetConnection(_ connectionToInvalidate: NSXPCConnection) {
         clearConnection(connectionToInvalidate)
         connectionToInvalidate.invalidate()
+    }
+
+    private func resetCurrentConnection() {
+        connectionLock.lock()
+        let currentConnection = connection
+        connection = nil
+        connectionLock.unlock()
+
+        currentConnection?.invalidate()
     }
 
     private func clearConnection(_ connectionToClear: NSXPCConnection) {

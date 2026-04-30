@@ -12,7 +12,7 @@ struct MenuView: View {
             footer
         }
         .padding(16)
-        .frame(width: 320)
+        .frame(width: 340)
         .background(.regularMaterial)
     }
 
@@ -45,33 +45,37 @@ struct MenuView: View {
                 await power.setActive(!power.isActive)
             }
         } label: {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .fill(power.isActive ? Color.brown.opacity(0.18) : Color.secondary.opacity(0.16))
 
                     Image(systemName: power.isActive ? "moon.zzz.fill" : "moon.zzz")
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.system(size: 22, weight: .semibold))
                         .foregroundStyle(power.isActive ? Color.brown : Color.secondary)
                 }
-                .frame(width: 54, height: 54)
+                .frame(width: 50, height: 50)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Keep Awake")
-                        .font(.system(size: 19, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.9)
 
-                    Text(power.isActive ? "Lid-closed sleep is blocked" : "Click to prevent sleep")
+                    Text(power.isActive ? "Sleep is blocked" : "Prevent Mac sleep")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.9)
                 }
 
-                Spacer(minLength: 8)
+                Spacer(minLength: 6)
 
                 TogglePill(isOn: power.isActive, isBusy: power.isChanging)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, minHeight: 92)
+            .padding(13)
+            .frame(maxWidth: .infinity, minHeight: 88)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(power.isActive ? Color.brown.opacity(0.22) : Color.white.opacity(0.36))
@@ -115,7 +119,12 @@ struct MenuView: View {
     }
 
     private var needsHelperApproval: Bool {
-        power.lastError == "Approve Macchiato Helper in System Settings, then try again."
+        guard let lastError = power.lastError else {
+            return false
+        }
+
+        return lastError == "Approve Macchiato Helper in System Settings, then try again."
+            || lastError.contains("Approve the helper")
     }
 
     private var statusColor: Color {
@@ -163,7 +172,7 @@ private struct TogglePill: View {
 
             Circle()
                 .fill(.white)
-                .frame(width: 28, height: 28)
+                .frame(width: 26, height: 26)
                 .padding(3)
                 .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
                 .overlay {
@@ -173,7 +182,7 @@ private struct TogglePill: View {
                     }
                 }
         }
-        .frame(width: 56, height: 34)
+        .frame(width: 52, height: 32)
         .animation(.spring(response: 0.26, dampingFraction: 0.82), value: isOn)
     }
 }
