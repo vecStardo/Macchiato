@@ -1,6 +1,7 @@
 import SwiftUI
 
 @main
+@MainActor
 struct MacchiatoApp: App {
     @State private var power = PowerManager.shared
 

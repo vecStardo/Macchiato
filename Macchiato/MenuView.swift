@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 
+@MainActor
 struct MenuView: View {
     @Environment(PowerManager.self) private var power
 
