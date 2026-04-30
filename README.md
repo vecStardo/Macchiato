@@ -8,7 +8,7 @@ It uses an IOKit `PreventUserIdleSystemSleep` assertion plus macOS' `pmset disab
 
 The first time Macchiato needs lid-closed sleep control, macOS may require the user to approve **Macchiato Helper** in System Settings. After approval, normal on/off toggles communicate with the helper over XPC and should not ask for administrator credentials again.
 
-Apps that register LaunchDaemons with `SMAppService` must be code signed, and production distribution must be notarized. For release builds, set a real Apple Developer Team and notarize the containing app bundle. The XPC connection validates bundle identifiers and, when available, the signing Team ID.
+Internal distribution uses the project's private signing flow. Release builds must not include debug signing entitlements such as `get-task-allow`, and the app and embedded helper must be signed consistently before packaging the DMG. Users approve/trust the internal build through macOS, then Macchiato registers the helper through `SMAppService`.
 
 ## Recovery
 
@@ -23,6 +23,14 @@ sudo pmset -a disablesleep 0
 ```sh
 xcodebuild -project Macchiato.xcodeproj -scheme Macchiato -configuration Debug build
 ```
+
+Build the internal distribution DMG:
+
+```sh
+scripts/build-dmg.sh
+```
+
+Additional `xcodebuild` build settings can be passed through when needed by the internal signing flow.
 
 The `Macchiato` target depends on `Macchiato Power Helper` and embeds the helper executable plus its launchd plist into:
 

@@ -18,14 +18,12 @@ struct MenuView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            Image(systemName: "cup.and.saucer.fill")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(.white)
+            Image("MacchiatoBase")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
                 .frame(width: 34, height: 34)
-                .background(
-                    Circle()
-                        .fill(power.isActive ? Color.brown : Color.secondary.opacity(0.24))
-                )
+                .clipShape(Circle())
+                .frame(width: 34, height: 34)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Macchiato")
