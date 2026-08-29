@@ -21,6 +21,10 @@ Macchiato gives you a single menu bar switch:
 - **On:** keep the Mac awake, including lid-closed use.
 - **Off:** restore normal macOS sleep behavior.
 
+## Extra Safety Features
+
+- **Low-battery back-off.** While Keep Awake is on, Macchiato watches the battery. If the level reaches **10% or less on battery power** (not charging), it automatically turns Keep Awake off — releasing the power assertion and restoring normal sleep via `pmset disablesleep 0` — and posts a notification explaining why. The app keeps running, so you can turn Keep Awake back on once the Mac is plugged in.
+
 ## How To Use
 
 1. Launch **Macchiato**.
