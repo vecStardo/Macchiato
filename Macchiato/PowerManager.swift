@@ -10,12 +10,23 @@ final class PowerManager {
     private(set) var isActive = false
     private(set) var isChanging = false
     private(set) var lastError: String?
+    /// Set when Keep Awake backed off because the battery ran low.
+    private(set) var stoppedDueToLowBattery = false
+
+    var batteryLevel: Int? { batteryMonitor.batteryLevel }
+    var isOnBatteryPower: Bool { batteryMonitor.isOnBatteryPower }
 
     private var assertionID: IOPMAssertionID = 0
     private let helper = PowerHelperClient.shared
     private let reason = "Macchiato is keeping your Mac awake" as CFString
 
-    private init() {}
+    private let batteryMonitor = BatteryMonitor()
+
+    private init() {
+        batteryMonitor.onLowBattery = { [weak self] in
+            Task { await self?.handleLowBattery() }
+        }
+    }
 
     func setActive(_ active: Bool) async {
         active ? await enable() : await disable()
@@ -23,6 +34,11 @@ final class PowerManager {
 
     func openHelperApprovalSettings() {
         helper.openHelperApprovalSettings()
+    }
+
+    func startMonitoring() {
+        batteryMonitor.start()
+        Notifier.requestAuthorization()
     }
 
     func enable() async {
@@ -54,6 +70,7 @@ final class PowerManager {
                 return
             }
             isActive = true
+            stoppedDueToLowBattery = false
         } catch {
             releaseAssertion()
             lastError = error.localizedDescription
@@ -88,6 +105,18 @@ final class PowerManager {
         if assertionID != 0 {
             IOPMAssertionRelease(assertionID)
             assertionID = 0
+        }
+    }
+
+    private func handleLowBattery() async {
+        guard isActive, !isChanging else { return }
+
+        let isFirstBackOff = !stoppedDueToLowBattery
+        stoppedDueToLowBattery = true
+        await disable()
+
+        if !isActive, isFirstBackOff {
+            await Notifier.postLowBatteryNotice(level: batteryMonitor.batteryLevel ?? 0)
         }
     }
 }

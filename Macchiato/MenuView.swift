@@ -10,6 +10,7 @@ struct MenuView: View {
             header
             awakeToggle
             statusArea
+            lowBatteryNotice
             footer
         }
         .padding(16)
@@ -93,6 +94,31 @@ struct MenuView: View {
         .buttonStyle(.plain)
     }
 
+    private var lowBatteryNotice: some View {
+        Group {
+            if power.stoppedDueToLowBattery {
+                HStack(spacing: 8) {
+                    Image(systemName: "battery.25%")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.red)
+
+                    Text("Battery low — Keep Awake turned off")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.red)
+                        .lineLimit(2)
+
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, 2)
+            }
+        }
+    }
+
+    private var batteryText: String? {
+        guard let level = power.batteryLevel else { return nil }
+        return power.isOnBatteryPower ? "Battery \(level)%" : "Battery \(level)% · Charging"
+    }
+
     private var statusArea: some View {
         HStack(spacing: 8) {
             Image(systemName: power.lastError == nil ? "clock.arrow.circlepath" : "exclamationmark.triangle.fill")
@@ -141,7 +167,7 @@ struct MenuView: View {
 
     private var footer: some View {
         HStack {
-            Text("Menu bar utility")
+            Text(batteryText ?? "Menu bar utility")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(.tertiary)
 

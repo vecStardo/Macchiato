@@ -5,6 +5,10 @@ import SwiftUI
 struct MacchiatoApp: App {
     @State private var power = PowerManager.shared
 
+    init() {
+        PowerManager.shared.startMonitoring()
+    }
+
     var body: some Scene {
         MenuBarExtra {
             MenuView()
