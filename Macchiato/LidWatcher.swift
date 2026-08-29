@@ -269,3 +269,58 @@ final class LidWatcher {
         return Double(raw)
     }
 }
+
+/// Periodically asserts user activity so the screensaver / lock screen
+/// cannot engage while the lid is closed. Fails safe: if the app exits,
+/// the last `caffeinate` window expires within a minute and the normal
+/// lock policy resumes.
+@MainActor
+final class LockScreenKeeper {
+    static let windowSeconds = 40
+    static let respawnInterval: TimeInterval = 20
+
+    private(set) var isKeepingUnlocked = false
+
+    private var process: Process?
+    private var timer: Timer?
+
+    func start() {
+        guard timer == nil else { return }
+        isKeepingUnlocked = true
+
+        let timer = Timer(timeInterval: Self.respawnInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.ensureProcess() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        self.timer = timer
+
+        ensureProcess()
+    }
+
+    func stop() {
+        timer?.invalidate()
+        timer = nil
+        if let process {
+            process.terminate()
+        }
+        process = nil
+        isKeepingUnlocked = false
+    }
+
+    private func ensureProcess() {
+        guard isKeepingUnlocked else { return }
+        if let process, process.isRunning { return }
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/caffeinate")
+        process.arguments = ["-u", "-t", String(Self.windowSeconds)]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+            self.process = process
+        } catch {
+            self.process = nil
+        }
+    }
+}

@@ -124,6 +124,22 @@ struct MenuView: View {
                 .foregroundStyle(.tertiary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
+
+            Toggle(isOn: preventLockBinding) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Prevent lock while lid closed")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.primary)
+
+                    Text("Keeps the session unlocked; opening the lid won't ask for a password.")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .toggleStyle(.switch)
+            .controlSize(.mini)
         }
         .padding(13)
         .frame(maxWidth: .infinity)
@@ -141,6 +157,13 @@ struct MenuView: View {
         Binding(
             get: { power.lidScreenMode },
             set: { power.lidScreenMode = $0 }
+        )
+    }
+
+    private var preventLockBinding: Binding<Bool> {
+        Binding(
+            get: { power.preventLockWhileLidClosed },
+            set: { power.preventLockWhileLidClosed = $0 }
         )
     }
 

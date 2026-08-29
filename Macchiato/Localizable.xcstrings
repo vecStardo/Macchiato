@@ -353,6 +353,38 @@
         }
       }
     },
+    "Prevent lock while lid closed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prevent lock while lid closed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合盖期间防止锁屏"
+          }
+        }
+      }
+    },
+    "Keeps the session unlocked; opening the lid won't ask for a password." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keeps the session unlocked; opening the lid won't ask for a password."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合盖期间保持会话解锁，开盖无需输入密码。"
+          }
+        }
+      }
+    },
     "Prevent Mac sleep" : {
       "localizations" : {
         "en" : {
