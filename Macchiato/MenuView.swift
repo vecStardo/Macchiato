@@ -113,7 +113,7 @@ struct MenuView: View {
 
             Picker("On lid close", selection: lidModeBinding) {
                 ForEach(LidScreenMode.allCases, id: \.self) { mode in
-                    Text(mode.title).tag(mode)
+                    Text(LocalizedStringKey(mode.title)).tag(mode)
                 }
             }
             .pickerStyle(.segmented)
@@ -144,7 +144,7 @@ struct MenuView: View {
         )
     }
 
-    private var lidModeCaption: String {
+    private var lidModeCaption: LocalizedStringKey {
         power.lidScreenMode == .dimBrightness
             ? "Built-in screen dims to black while the lid is closed, restored on open."
             : "Built-in display sleeps while the lid is closed, wakes on open."
@@ -172,7 +172,15 @@ struct MenuView: View {
 
     private var batteryText: String? {
         guard let level = power.batteryLevel else { return nil }
-        return power.isOnBatteryPower ? "Battery \(level)%" : "Battery \(level)% · Charging"
+        let key = power.isOnBatteryPower ? "Battery %lld%%" : "Battery %lld%% · Charging"
+        return String.localizedStringWithFormat(NSLocalizedString(key, comment: "battery footer"), level)
+    }
+
+    private var statusText: LocalizedStringKey {
+        if let lastError = power.lastError {
+            return LocalizedStringKey(lastError)
+        }
+        return "Applying system sleep setting..."
     }
 
     private var statusArea: some View {
@@ -181,7 +189,7 @@ struct MenuView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(statusColor)
 
-            Text(power.lastError ?? "Applying system sleep setting...")
+            Text(statusText)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(statusColor)
                 .lineLimit(3)
@@ -223,9 +231,15 @@ struct MenuView: View {
 
     private var footer: some View {
         HStack {
-            Text(batteryText ?? "Menu bar utility")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.tertiary)
+            if let batteryText {
+                Text(batteryText)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.tertiary)
+            } else {
+                Text("Menu bar utility")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.tertiary)
+            }
 
             Spacer()
 

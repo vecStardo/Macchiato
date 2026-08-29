@@ -91,7 +91,13 @@ enum Notifier {
     static func postLowBatteryNotice(level: Int) async {
         let content = UNMutableNotificationContent()
         content.title = "Macchiato"
-        content.body = "Battery at \(level)%. Keep Awake turned off so your Mac can sleep."
+        content.body = String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Battery at %lld%%. Keep Awake turned off so your Mac can sleep.",
+                comment: "low-battery notification body"
+            ),
+            level
+        )
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
         try? await UNUserNotificationCenter.current().add(request)
     }
