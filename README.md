@@ -24,6 +24,7 @@ Macchiato gives you a single menu bar switch:
 ## Extra Safety Features
 
 - **Low-battery back-off.** While Keep Awake is on, Macchiato watches the battery. If the level reaches **10% or less on battery power** (not charging), it automatically turns Keep Awake off — releasing the power assertion and restoring normal sleep via `pmset disablesleep 0` — and posts a notification explaining why. The app keeps running, so you can turn Keep Awake back on once the Mac is plugged in.
+- **Lid-closed screen handling.** `pmset disablesleep` keeps the Mac awake with the lid closed, but the built-in display then stays powered at full brightness inside a closed lid (heat + wasted battery). Macchiato reads the lid angle sensor and, while Keep Awake is on, either **dims the built-in screen to black** (default, brightness restored on open) or **sleeps the built-in display**. Pick the mode from the "On lid close" control in the menu; external displays are never touched.
 
 ## How To Use
 
