@@ -15,16 +15,30 @@ final class PowerManager {
 
     var batteryLevel: Int? { batteryMonitor.batteryLevel }
     var isOnBatteryPower: Bool { batteryMonitor.isOnBatteryPower }
+    var isLidClosed: Bool { lidWatcher.isLidClosed }
+
+    var lidScreenMode: LidScreenMode = LidScreenMode.stored {
+        didSet {
+            guard oldValue != lidScreenMode else { return }
+            lidScreenMode.store()
+            applyLidState(lidWatcher.isLidClosed)
+        }
+    }
 
     private var assertionID: IOPMAssertionID = 0
     private let helper = PowerHelperClient.shared
     private let reason = "Macchiato is keeping your Mac awake" as CFString
 
     private let batteryMonitor = BatteryMonitor()
+    private let lidWatcher = LidWatcher()
+    private let dimmer = DisplayDimmer()
 
     private init() {
         batteryMonitor.onLowBattery = { [weak self] in
             Task { await self?.handleLowBattery() }
+        }
+        lidWatcher.onLidStateChanged = { [weak self] closed in
+            self?.applyLidState(closed)
         }
     }
 
@@ -71,6 +85,7 @@ final class PowerManager {
             }
             isActive = true
             stoppedDueToLowBattery = false
+            lidWatcher.start()
         } catch {
             releaseAssertion()
             lastError = error.localizedDescription
@@ -84,6 +99,11 @@ final class PowerManager {
 
         isChanging = true
         lastError = nil
+
+        // Drop any lid-screen override before touching sleep state, so the
+        // display is never left dark or asleep once Keep Awake is off.
+        dimmer.restore()
+        lidWatcher.stop()
 
         do {
             try await helper.setSleepDisabled(false)
@@ -117,6 +137,24 @@ final class PowerManager {
 
         if !isActive, isFirstBackOff {
             await Notifier.postLowBatteryNotice(level: batteryMonitor.batteryLevel ?? 0)
+        }
+    }
+
+    private func applyLidState(_ closed: Bool) {
+        guard isActive else { return }
+
+        if closed {
+            switch lidScreenMode {
+            case .dimBrightness where DisplayBrightnessService.isAvailable:
+                dimmer.dim()
+            case .dimBrightness, .sleepDisplay:
+                ScreenPower.sleepDisplaysNow()
+            }
+        } else {
+            dimmer.restore()
+            if lidScreenMode == .sleepDisplay {
+                ScreenPower.nudgeDisplaysAwake()
+            }
         }
     }
 }

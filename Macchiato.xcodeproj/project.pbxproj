@@ -12,6 +12,7 @@
 		10A0000A0000000000000003 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000010000000000000003 /* MenuView.swift */; };
 		10A0000A0000000000000004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 10A000010000000000000005 /* Assets.xcassets */; };
 		10A0000A0000000000000007 /* BatteryMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000010000000000000007 /* BatteryMonitor.swift */; };
+		10A0000A0000000000000008 /* LidWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10A000010000000000000008 /* LidWatcher.swift */; };
 		20A0000A0000000000000001 /* PowerHelperClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A000010000000000000001 /* PowerHelperClient.swift */; };
 		20A0000A0000000000000002 /* PowerHelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A000010000000000000002 /* PowerHelperProtocol.swift */; };
 		20A0000A0000000000000003 /* PowerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A000010000000000000003 /* PowerHelper.swift */; };
@@ -35,6 +36,7 @@
 		10A000010000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		10A000010000000000000005 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		10A000010000000000000007 /* BatteryMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryMonitor.swift; sourceTree = "<group>"; };
+		10A000010000000000000008 /* LidWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LidWatcher.swift; sourceTree = "<group>"; };
 		10A000010000000000000006 /* Macchiato.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Macchiato.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		20A000010000000000000001 /* PowerHelperClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerHelperClient.swift; sourceTree = "<group>"; };
 		20A000010000000000000002 /* PowerHelperProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerHelperProtocol.swift; sourceTree = "<group>"; };
@@ -77,6 +79,7 @@
 				10A000010000000000000001 /* MacchiatoApp.swift */,
 				10A000010000000000000002 /* PowerManager.swift */,
 				10A000010000000000000007 /* BatteryMonitor.swift */,
+				10A000010000000000000008 /* LidWatcher.swift */,
 				20A000010000000000000001 /* PowerHelperClient.swift */,
 				10A000010000000000000003 /* MenuView.swift */,
 				10A000010000000000000005 /* Assets.xcassets */,
@@ -231,6 +234,7 @@
 				10A0000A0000000000000001 /* MacchiatoApp.swift in Sources */,
 				10A0000A0000000000000002 /* PowerManager.swift in Sources */,
 				10A0000A0000000000000007 /* BatteryMonitor.swift in Sources */,
+				10A0000A0000000000000008 /* LidWatcher.swift in Sources */,
 				20A0000A0000000000000001 /* PowerHelperClient.swift in Sources */,
 				20A0000A0000000000000002 /* PowerHelperProtocol.swift in Sources */,
 				10A0000A0000000000000003 /* MenuView.swift in Sources */,

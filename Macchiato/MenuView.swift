@@ -9,6 +9,7 @@ struct MenuView: View {
         VStack(spacing: 14) {
             header
             awakeToggle
+            lidOptions
             statusArea
             lowBatteryNotice
             footer
@@ -92,6 +93,61 @@ struct MenuView: View {
             .animation(.easeInOut(duration: 0.22), value: power.isActive)
         }
         .buttonStyle(.plain)
+    }
+
+    private var lidOptions: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack {
+                Text("On lid close")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                if power.isActive {
+                    Label(power.isLidClosed ? "Lid closed" : "Lid open", systemImage: power.isLidClosed ? "laptopcomputer.and.arrow.down" : "laptopcomputer.and.arrow.up")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+
+            Picker("On lid close", selection: lidModeBinding) {
+                ForEach(LidScreenMode.allCases, id: \.self) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            Text(lidModeCaption)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.tertiary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(13)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.36))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .strokeBorder(Color.white.opacity(0.5), lineWidth: 1)
+        )
+    }
+
+    private var lidModeBinding: Binding<LidScreenMode> {
+        Binding(
+            get: { power.lidScreenMode },
+            set: { power.lidScreenMode = $0 }
+        )
+    }
+
+    private var lidModeCaption: String {
+        power.lidScreenMode == .dimBrightness
+            ? "Built-in screen dims to black while the lid is closed, restored on open."
+            : "Built-in display sleeps while the lid is closed, wakes on open."
     }
 
     private var lowBatteryNotice: some View {
