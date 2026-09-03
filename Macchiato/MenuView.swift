@@ -140,6 +140,22 @@ struct MenuView: View {
             }
             .toggleStyle(.switch)
             .controlSize(.mini)
+
+            Toggle(isOn: muteBinding) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Mute while lid closed")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.primary)
+
+                    Text("Silences output while closed; sound returns when the lid opens.")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .toggleStyle(.switch)
+            .controlSize(.mini)
         }
         .padding(13)
         .frame(maxWidth: .infinity)
@@ -164,6 +180,13 @@ struct MenuView: View {
         Binding(
             get: { power.preventLockWhileLidClosed },
             set: { power.preventLockWhileLidClosed = $0 }
+        )
+    }
+
+    private var muteBinding: Binding<Bool> {
+        Binding(
+            get: { power.muteWhenLidCloses },
+            set: { power.muteWhenLidCloses = $0 }
         )
     }
 

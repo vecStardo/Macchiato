@@ -1,3 +1,4 @@
+import CoreAudio
 import CoreGraphics
 import Foundation
 import IOKit
@@ -322,5 +323,78 @@ final class LockScreenKeeper {
         } catch {
             self.process = nil
         }
+    }
+}
+
+/// Mutes/restores the default output device via CoreAudio. Remembers whether
+/// the Mac was already muted when the lid closed, so opening the lid never
+/// un-mutes sound the user had muted themselves.
+@MainActor
+final class AudioMuter {
+    private(set) var hasMutedForLid = false
+
+    func muteForLidClose() {
+        guard !hasMutedForLid else { return }
+
+        if SystemAudio.isMuted != true, SystemAudio.setMuted(true) {
+            hasMutedForLid = true
+        }
+    }
+
+    func restoreForLidOpen() {
+        guard hasMutedForLid else { return }
+
+        _ = SystemAudio.setMuted(false)
+        hasMutedForLid = false
+    }
+}
+
+enum SystemAudio {
+    static var isMuted: Bool? {
+        guard let device = defaultOutputDevice() else { return nil }
+
+        var muted: UInt32 = 0
+        var size = UInt32(MemoryLayout<UInt32>.size)
+        var address = muteProperty
+        guard AudioObjectGetPropertyData(device, &address, 0, nil, &size, &muted) == noErr else {
+            return nil
+        }
+        return muted != 0
+    }
+
+    @discardableResult
+    static func setMuted(_ muted: Bool) -> Bool {
+        guard let device = defaultOutputDevice() else { return false }
+
+        var value: UInt32 = muted ? 1 : 0
+        let size = UInt32(MemoryLayout<UInt32>.size)
+        var address = muteProperty
+        return AudioObjectSetPropertyData(device, &address, 0, nil, size, &value) == noErr
+    }
+
+    private static var muteProperty: AudioObjectPropertyAddress {
+        AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyMute,
+            mScope: kAudioObjectPropertyScopeOutput,
+            mElement: kAudioObjectPropertyElementMain
+        )
+    }
+
+    private static func defaultOutputDevice() -> AudioObjectID? {
+        var device = AudioObjectID(0)
+        var size = UInt32(MemoryLayout<AudioObjectID>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultOutputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+
+        guard AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address, 0, nil, &size, &device
+        ) == noErr, device != 0 else {
+            return nil
+        }
+        return device
     }
 }

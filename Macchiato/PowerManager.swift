@@ -40,6 +40,17 @@ final class PowerManager {
 
     private static let preventLockStorageKey = "preventLockWhileLidClosed"
 
+    /// Opt-in: mute the default output while the lid is closed, restore on open.
+    var muteWhenLidCloses: Bool {
+        didSet {
+            guard oldValue != muteWhenLidCloses else { return }
+            UserDefaults.standard.set(muteWhenLidCloses, forKey: Self.muteStorageKey)
+            updateAudioMuter()
+        }
+    }
+
+    private static let muteStorageKey = "muteWhenLidCloses"
+
     private var assertionID: IOPMAssertionID = 0
     private let helper = PowerHelperClient.shared
     private let reason = "Macchiato is keeping your Mac awake" as CFString
@@ -48,9 +59,11 @@ final class PowerManager {
     private let lidWatcher = LidWatcher()
     private let dimmer = DisplayDimmer()
     private let lockKeeper = LockScreenKeeper()
+    private let audioMuter = AudioMuter()
 
     private init() {
         preventLockWhileLidClosed = UserDefaults.standard.bool(forKey: Self.preventLockStorageKey)
+        muteWhenLidCloses = UserDefaults.standard.bool(forKey: Self.muteStorageKey)
         batteryMonitor.onLowBattery = { [weak self] in
             Task { await self?.handleLowBattery() }
         }
@@ -104,6 +117,7 @@ final class PowerManager {
             stoppedDueToLowBattery = false
             lidWatcher.start()
             updateLockKeeper()
+            updateAudioMuter()
         } catch {
             releaseAssertion()
             lastError = error.localizedDescription
@@ -122,6 +136,7 @@ final class PowerManager {
         // display is never left dark or asleep once Keep Awake is off.
         dimmer.restore()
         lockKeeper.stop()
+        audioMuter.restoreForLidOpen()
         lidWatcher.stop()
 
         do {
@@ -177,6 +192,7 @@ final class PowerManager {
         }
 
         updateLockKeeper()
+        updateAudioMuter()
     }
 
     private func updateLockKeeper() {
@@ -185,5 +201,13 @@ final class PowerManager {
             && lidWatcher.isLidClosed
 
         shouldRun ? lockKeeper.start() : lockKeeper.stop()
+    }
+
+    private func updateAudioMuter() {
+        let shouldMute = isActive
+            && muteWhenLidCloses
+            && lidWatcher.isLidClosed
+
+        shouldMute ? audioMuter.muteForLidClose() : audioMuter.restoreForLidOpen()
     }
 }

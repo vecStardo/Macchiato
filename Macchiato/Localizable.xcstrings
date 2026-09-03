@@ -417,6 +417,38 @@
         }
       }
     },
+    "Mute while lid closed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute while lid closed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合盖期间静音"
+          }
+        }
+      }
+    },
+    "Silences output while closed; sound returns when the lid opens." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silences output while closed; sound returns when the lid opens."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合盖时静音输出，开盖自动恢复声音。"
+          }
+        }
+      }
+    },
     "Sleep" : {
       "localizations" : {
         "en" : {
