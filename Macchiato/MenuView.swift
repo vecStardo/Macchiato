@@ -126,32 +126,40 @@ struct MenuView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Toggle(isOn: preventLockBinding) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Prevent lock while lid closed")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.primary)
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Prevent lock while lid closed")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.primary)
 
-                    Text("Keeps the session unlocked; opening the lid won't ask for a password.")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
+                        Text("Keeps the session unlocked; opening the lid won't ask for a password.")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer()
                 }
             }
             .toggleStyle(.switch)
             .controlSize(.mini)
 
             Toggle(isOn: muteBinding) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Mute while lid closed")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.primary)
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Mute while lid closed")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.primary)
 
-                    Text("Silences output while closed; sound returns when the lid opens.")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
+                        Text("Silences output while closed; sound returns when the lid opens.")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer()
                 }
             }
             .toggleStyle(.switch)
